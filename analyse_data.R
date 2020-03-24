@@ -40,7 +40,7 @@ cepagri$mes <- factor(month.abb[cepagri$mes], levels = month.abb, ordered = TRUE
 cepagri$dia <- as.numeric(format(cepagri$horario,'%d'))
 cepagri$anomes <- paste(cepagri$ano,cepagri$mes, sep = "/")
 cepagri$estacao <- quarters(cepagri$horario)
-cepagri$estacao <- factor(cepagri$estaçao, levels = c("Q1","Q2","Q3","Q4"), labels = c("Verão","Outono","Inverno","Primavera"),ordered = TRUE)
+cepagri$estacao <- factor(cepagri$estacao, levels = c("Q1","Q2","Q3","Q4"), labels = c("Verão","Outono","Inverno","Primavera"),ordered = TRUE)
 
 # Substitui valores na coluna temp iguais a ' [ERRO]' por NA
 sum(cepagri$temp == ' [ERRO]')
@@ -77,7 +77,7 @@ verao <- verao[verao$estacao == 'Verão',]
 verao$ano <- as.character(verao$ano)
 
 inverno <- cepagri
-inverno <- inverno[inverno$mes == 'Inverno',]
+inverno <- inverno[inverno$estacao == 'Inverno',]
 inverno$ano <- as.character(inverno$ano)
 
 # plot da temperatura no verão
@@ -170,7 +170,7 @@ ggplot(cepagri, aes(x = ano))+
   geom_point(aes(y = temp, colour = temp),alpha = 0.01)+
   scale_color_continuous(low = "blue", high = "red")+
   scale_x_continuous(breaks = unique(ceiling(cepagri$ano)))+
-  facet_wrap(~ estação);
+  facet_wrap(~ estacao);
 
 #Análise 4 - Sensação Térmica, temperatura e Umidade do ar
 # O ar úmido aumenta a sensação de calor e frio. Quando a temperatura está alta, se a umidade relativa do ar 
@@ -183,7 +183,7 @@ ggplot(cepagri_2016, aes(x = temp, y = umid, colour = sensa)) +
   ylab("Umidade")+
   ggtitle("Sensação térmica em relação a Umidade e Temperatura") +
   scale_colour_gradientn(colours = terrain.colors(10))+
-  geom_point(alpha = 0.1);
+  geom_point(alpha = 0.1)
  
 
 
