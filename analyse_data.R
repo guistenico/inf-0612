@@ -133,32 +133,61 @@ ggplot(cepagri_2016, aes(x = sensa,
   geom_density(alpha = 0.25) +
   labs(title = "Velocidade do vento e sensação térmica ")
 
-# Análise 3 - Aquecimento Global
+#Análise 3 - Sensação Térmica, temperatura e Umidade do ar
+# O ar úmido aumenta a sensação de calor e frio. Quando a temperatura está alta, se a umidade relativa do ar 
+# também estiver alta, a sensação térmica tenderá a ser maior. Quando a temperatura está baixa (faixa de 24ºC), se a umidade relativa do ar
+# for muito alta, a sensação térmica será mais alta. Se estiver muito quente e a umidade
+# do ar for muito baixa, a sensação térmica será mais baixa.  
+
+ggplot(cepagri_2016, aes(x = temp, y = umid, colour = sensa)) +
+  xlab("Temperatura")+
+  ylab("Umidade")+
+  ggtitle("Sensação térmica em relação a Umidade e Temperatura") +
+  scale_colour_gradient2(low = "blue", mid = "green",
+                         high = "red", midpoint = 15, space = "Lab",
+                         na.value = "grey50", guide = "colourbar", aesthetics = "colour")+
+  #scale_colour_gradientn(colours = terrain.colors(15))+
+  geom_point(alpha = 0.1)
+
+# Análise 4 - Aquecimento Global
 # Verificar as temperaturas durante os 5 anos, incluindo a média, a máxima e a mínima.
 # Estudo apontam um aumento de 0.0225ºC/ano por ano na região de Campinas na temperatura média mínima,
 # entre os anos de 1890 e 2006. Será analisado essa variação média, mínima e máxima, e a distribuição das temperaturas.
 #
 
-temp_media <- aggregate(cepagri$temp, list(cepagri$mes,cepagri$ano), mean)
-temp_media$max <- tapply(cepagri$temp, cepagri$anomes, max);
-temp_media$min <- tapply(cepagri$temp, cepagri$anomes, min);
-colnames(temp_media) <- c("Mês", "Ano","Média", "Máx", "Mín")
-temp_media$Ano <- temp_media$Ano
-temp_media$AnoMês <- paste(temp_media$Ano,temp_media$Mês, sep = "/")
-temp_media$AnoMês <- factor(temp_media$AnoMês, levels = temp_media$AnoMês, ordered = TRUE)
+maxima <- aggregate(cepagri$temp, list(cepagri$dia,cepagri$mes,cepagri$ano), max)
+colnames(maxima) <- c("Dia", "Mês","Ano", "Máx")
+maxima_ano <- tapply(maxima$Máx, maxima$Ano , mean);
+maxima_ano
 
-ggplot(temp_media, aes(x = temp_media$AnoMês, group = 3)) +
-  geom_line(aes(y = Média))+
-  geom_line(aes(y = Máx), colour = "red")+
-  geom_line(aes(y = Mín), colour = "blue")+
-  xlab("Meses")+
+minima <- aggregate(cepagri$temp, list(cepagri$dia,cepagri$mes,cepagri$ano), min)
+colnames(minima) <- c("Dia", "Mês","Ano", "Mín")
+minima_ano <- tapply(minima$Mín, minima$Ano , mean);
+minima_ano
+
+temp_media <- aggregate(cepagri$temp, list(cepagri$dia,cepagri$mes,cepagri$ano), mean)
+colnames(temp_media) <- c("Dia","Mês", "Ano","Média")
+temp_media_ano <- tapply(temp_media$Média, temp_media$Ano , mean);
+
+df <- data.frame(Ano = names(as.list(temp_media_ano)), Média = as.data.frame(temp_media_ano)[,1],Máxima = as.data.frame(maxima_ano)[,1], Mínima = as.data.frame(minima_ano)[,1])
+con <- file("Analise4.txt", "w")
+write.table(df , con)
+close(con)
+
+#Gráfico da média anual das temperaturas médias diárias, temperaturas máximas diárias e temperaturas mínimas diárias
+
+ggplot(df, aes(x = Ano, group = 3)) +
+  geom_line(aes(y = Média, colour = "Média"))+
+  geom_point(aes(y = Média, colour = "Média"))+
+  geom_line(aes(y = Máxima, colour = "Máxima"))+
+  geom_point(aes(y = Máxima, colour = "Máxima"))+
+  geom_line(aes(y = Mínima, colour = "Mínima"))+
+  geom_point(aes(y = Mínima, colour = "Mínima"))+
+  xlab("Ano")+
   ylab("Temperatura")+
-  labs(title = "Temperaturas Média, Máxima, Mínima")+
-  theme(axis.text.x = element_text(angle=90))+
+  labs(title = "Temperaturas Média, Máxima, Mínima", colour = "Legenda")+
   theme(legend.background = element_rect(linetype = "solid"))+
-  theme(legend.position = "bottom")+ 
-  theme(legend.position = c(0.85, 0.5)); 
-
+  theme(legend.position = "top");
 
 #Gráfico da média de temperatura por trimestre dos 5 anos
 
@@ -172,18 +201,7 @@ ggplot(cepagri, aes(x = ano))+
   scale_x_continuous(breaks = unique(ceiling(cepagri$ano)))+
   facet_wrap(~ estacao);
 
-#Análise 4 - Sensação Térmica, temperatura e Umidade do ar
-# O ar úmido aumenta a sensação de calor e frio. Quando a temperatura está alta, se a umidade relativa do ar 
-# também estiver alta, a sensação térmica tenderá a ser maior. Quando a temperatura está baixa (faixa de 24ºC), se a umidade relativa do ar
-# for muito alta, a sensação térmica será mais alta. Se estiver muito quente e a umidade
-# do ar for muito baixa, a sensação térmica será mais baixa.  
 
-ggplot(cepagri_2016, aes(x = temp, y = umid, colour = sensa)) +
-  xlab("Temperatura")+
-  ylab("Umidade")+
-  ggtitle("Sensação térmica em relação a Umidade e Temperatura") +
-  scale_colour_gradientn(colours = terrain.colors(10))+
-  geom_point(alpha = 0.1)
  
 
 
